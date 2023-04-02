@@ -1,5 +1,10 @@
 name: Authenticator
 version: '${project.version}'
-main: com.github.tezvn.realistic.authenticator.Authenticator
+main: com.github.tezvn.authenticator.AuthenticatorPlugin
 api-version: 1.19
-depend: [AuthMe]
+depend:
+  - AuthMe
+  - floodgate
+commands:
+  test:
+    usage: /test

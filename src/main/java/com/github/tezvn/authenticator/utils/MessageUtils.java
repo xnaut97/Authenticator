@@ -2,6 +2,7 @@ package com.github.tezvn.authenticator.utils;
 
 import com.github.tezvn.authenticator.utils.time.TimeUtils;
 import com.google.common.collect.Maps;
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -10,6 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MessageUtils {
@@ -53,5 +56,11 @@ public class MessageUtils {
 
     public static List<String> color(List<String> list) {
         return color(list.toArray(new String[0]));
+    }
+
+    public static boolean checkSpecialCharacters(String str) {
+        Pattern pattern = Pattern.compile("[^a-zA-Z0-9]");
+        Matcher matcher = pattern.matcher(str);
+        return matcher.find();
     }
 }
