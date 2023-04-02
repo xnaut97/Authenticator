@@ -1,0 +1,5 @@
+name: Authenticator
+version: '${project.version}'
+main: com.github.tezvn.realistic.authenticator.Authenticator
+api-version: 1.19
+depend: [AuthMe]
