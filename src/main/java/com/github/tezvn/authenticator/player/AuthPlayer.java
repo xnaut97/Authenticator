@@ -24,4 +24,8 @@ public class AuthPlayer {
         this.password2nd = password2nd;
     }
 
+    public boolean checkPassword(String password2nd) {
+        return password2nd != null && password2nd.equals(this.getPassword2nd());
+    }
+
 }

@@ -1,8 +1,8 @@
-package com.github.tezvn.authenticator.player;
+package com.github.tezvn.authenticator.player.input;
 
-public class PlayerRegisteration {
+import org.bukkit.entity.Player;
 
-    private String password;
+public class RegisterInput extends AbstractInput {
 
     private String retypePassword;
 
@@ -10,21 +10,15 @@ public class PlayerRegisteration {
 
     private int attempts;
 
-    public PlayerRegisteration() {
+    public RegisterInput(Player player) {
+        super(player, InputType.REGISTER);
     }
 
-    public PlayerRegisteration(String password, String retypePassword, String password2nd) {
-        this.password = password;
+    public RegisterInput(Player player, String password, String retypePassword, String password2nd) {
+        super(player, InputType.REGISTER);
+        setPassword(password);
         this.retypePassword = retypePassword;
         this.password2nd = password2nd;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password == null ? "" : password;
     }
 
     public String getRetypePassword() {
@@ -50,4 +44,9 @@ public class PlayerRegisteration {
     public void setAttempts(int attempts) {
         this.attempts = attempts;
     }
+
+    public boolean isPasswordMatch() {
+        return getPassword().equals(this.getRetypePassword());
+    }
+
 }
