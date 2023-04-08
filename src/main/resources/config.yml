@@ -1,9 +1,0 @@
-database:
-  toggle: true
-  # Table will be created when plugin is loaded
-  table-name: 'user'
-  username: 'root'
-  password: 'password'
-  name: 'authenticator'
-  host: 'localhost'
-  port: 'default'

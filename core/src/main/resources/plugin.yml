@@ -1,0 +1,13 @@
+name: Authenticator
+version: '${project.version}'
+main: com.github.tezvn.authenticator.impl.AuthenticatorPluginImpl
+depend:
+  - AuthMe
+  - floodgate
+commands:
+  taomatkhaucap2:
+    usage: /taomatkhaucap2 [mật khẩu] [nhập lại mật khẩu]
+  khoiphucmatkhau:
+    usage: /khoiphucmatkhau
+  matkhaumoi:
+    usage: /matkhaumoi [mật khẩu] [nhập lại mật khẩu]
