@@ -42,11 +42,6 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
 
     private void openLoginSelectionForm(Player player, int delay) {
         runDelayed(delay, () -> {
-            AuthPlayer authPlayer = getPlayerManager().getPlayer(player);
-            if(authPlayer == null) {
-                openPassword2ndSetupForm(player);
-                return;
-            }
             floodgateApi.getPlayer(player.getUniqueId()).sendForm(SimpleForm.builder()
                     .button("ĐĂNG NHẬP")
                     .optionalButton("KHÔI PHỤC MẬT KHẨU", getPlayerManager().getPlayer(player) != null)

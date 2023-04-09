@@ -1,21 +1,22 @@
 package com.github.tezvn.authenticator.impl.player;
 
 import com.github.tezvn.authenticator.api.player.AuthPlayer;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 public final class AuthPlayerImpl implements AuthPlayer {
 
-    private final Player player;
+    private final OfflinePlayer player;
 
     private String password2nd;
 
-    public AuthPlayerImpl(Player player) {
+    public AuthPlayerImpl(OfflinePlayer player) {
         this.player = player;
     }
 
     @Override
     public Player getPlayer() {
-        return player;
+        return player.getPlayer();
     }
 
     @Override

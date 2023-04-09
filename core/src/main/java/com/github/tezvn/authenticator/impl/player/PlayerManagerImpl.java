@@ -121,7 +121,7 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
             OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
             String password = config.getString(name + ".password-2nd", player.getName() + "123456");
             this.players.computeIfAbsent(uuid, u -> {
-                AuthPlayer authPlayer = new AuthPlayerImpl((Player) player);
+                AuthPlayer authPlayer = new AuthPlayerImpl(player);
                 authPlayer.setPassword2nd(password);
                 return authPlayer;
             });
@@ -158,7 +158,7 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
                 UUID uuid = UUID.fromString(rs.getString("uuid"));
                 String password = rs.getString("password_2nd");
                 this.players.computeIfAbsent(uuid, u -> {
-                    AuthPlayer authPlayer = new AuthPlayerImpl((Player) Bukkit.getOfflinePlayer(uuid));
+                    AuthPlayer authPlayer = new AuthPlayerImpl(Bukkit.getOfflinePlayer(uuid));
                     authPlayer.setPassword2nd(password);
                     return authPlayer;
                 });
