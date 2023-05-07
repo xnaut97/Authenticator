@@ -15,8 +15,8 @@ public final class AuthPlayerImpl implements AuthPlayer {
     }
 
     @Override
-    public Player getPlayer() {
-        return player.getPlayer();
+    public OfflinePlayer getPlayer() {
+        return player;
     }
 
     @Override

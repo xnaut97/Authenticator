@@ -1,10 +1,11 @@
 package com.github.tezvn.authenticator.api.player;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 public interface AuthPlayer {
 
-    Player getPlayer();
+    OfflinePlayer getPlayer();
 
     String getPassword2nd();
 

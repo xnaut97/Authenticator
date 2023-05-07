@@ -127,10 +127,5 @@
             <artifactId>api</artifactId>
             <version>1.0</version>
         </dependency>
-        <dependency>
-            <groupId>com.github.tezvn.authenticator</groupId>
-            <artifactId>v1_16_R3</artifactId>
-            <version>abstraction</version>
-        </dependency>
     </dependencies>
 </project>
