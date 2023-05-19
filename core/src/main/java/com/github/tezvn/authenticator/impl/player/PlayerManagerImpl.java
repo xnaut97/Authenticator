@@ -89,6 +89,7 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
         this.players.forEach((uuid, authPlayer) -> {
             saveToLocal(authPlayer);
         });
+        plugin.getLogger().info("Saved " + players.size() + " players to local.");
     }
 
     public void saveToLocal(AuthPlayer authPlayer) {
@@ -97,8 +98,8 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
             if (!file.exists())
                 file.createNewFile();
             FileConfiguration config = YamlConfiguration.loadConfiguration(file);
-            config.set(authPlayer.getPlayer().getName() + ".uuid", authPlayer.getPlayer().getUniqueId().toString());
-            config.set(authPlayer.getPlayer().getName() + ".password-2nd", authPlayer.getPassword2nd());
+            config.set(authPlayer.getName() + ".uuid", authPlayer.getPlayer().getUniqueId().toString());
+            config.set(authPlayer.getName() + ".password-2nd", authPlayer.getPassword2nd());
             config.save(file);
         } catch (Exception e) {
             e.printStackTrace();
@@ -119,7 +120,7 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
         config.getKeys(false).forEach(name -> {
             UUID uuid = UUID.fromString(config.getString(name + ".uuid", ""));
             OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
-            String password = config.getString(name + ".password-2nd", player.getName() + "123456");
+            String password = config.getString(name + ".password-2nd", name + "123456");
             this.players.computeIfAbsent(uuid, u -> {
                 AuthPlayer authPlayer = new AuthPlayerImpl(player);
                 authPlayer.setPassword2nd(password);
@@ -132,17 +133,21 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
         if (this.players.isEmpty())
             return;
         this.players.forEach((uuid, authPlayer) -> saveToDatabase(authPlayer));
+        plugin.getLogger().info("Saved " + players.size() + " players to database.");
     }
 
     public void saveToDatabase(AuthPlayer authPlayer) {
         MySQL database = plugin.getDatabase();
         if (database == null || !database.isConnected())
             return;
-        database.addOrUpdate("user",
+        String tableName = plugin.getConfig().getString("database.table-name", null);
+        if(tableName == null)
+            return;
+        database.addOrUpdate(tableName,
                 new DatabaseInsertion("uuid", authPlayer.getPlayer().getUniqueId().toString()),
                 //
                 new DatabaseInsertion("uuid", authPlayer.getPlayer().getUniqueId().toString()),
-                new DatabaseInsertion("player_name", authPlayer.getPlayer().getName()),
+                new DatabaseInsertion("player_name", authPlayer.getName()),
                 new DatabaseInsertion("password_2nd", authPlayer.getPassword2nd()));
     }
 

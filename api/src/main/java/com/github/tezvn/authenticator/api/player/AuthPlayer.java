@@ -7,6 +7,8 @@ public interface AuthPlayer {
 
     OfflinePlayer getPlayer();
 
+    String getName();
+
     String getPassword2nd();
 
     void setPassword2nd(String password2nd);
