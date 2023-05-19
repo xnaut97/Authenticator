@@ -122,6 +122,7 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
                     getPlayerManager().getPlayers().computeIfAbsent(player.getUniqueId(), uuid -> {
                         AuthPlayerImpl authPlayer = new AuthPlayerImpl(player);
                         authPlayer.setPassword2nd(password);
+                        ((PlayerManagerImpl) getPlayerManager()).saveToLocal(authPlayer);
                         ((PlayerManagerImpl) getPlayerManager()).saveToDatabase(authPlayer);
                         return authPlayer;
                     });

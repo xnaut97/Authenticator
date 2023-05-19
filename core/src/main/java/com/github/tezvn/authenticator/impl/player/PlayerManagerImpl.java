@@ -26,6 +26,7 @@ import java.io.File;
 import java.sql.ResultSet;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.*;
 
 import static com.github.tezvn.authenticator.api.AbstractDatabase.DatabaseInsertion;
 
@@ -36,6 +37,8 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
     private final AuthenticatorPlugin plugin;
 
     private final Map<Platform, DataHandler> playerHandlers = Maps.newHashMap();
+
+    private final ExecutorService pool = Executors.newFixedThreadPool(6);
 
     public PlayerManagerImpl(AuthenticatorPluginImpl plugin) {
         this.plugin = plugin;
@@ -118,13 +121,15 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
         }
         FileConfiguration config = YamlConfiguration.loadConfiguration(file);
         config.getKeys(false).forEach(name -> {
-            UUID uuid = UUID.fromString(config.getString(name + ".uuid", ""));
-            OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
-            String password = config.getString(name + ".password-2nd", name + "123456");
-            this.players.computeIfAbsent(uuid, u -> {
-                AuthPlayer authPlayer = new AuthPlayerImpl(player);
-                authPlayer.setPassword2nd(password);
-                return authPlayer;
+            pool.submit(() -> {
+                UUID uuid = UUID.fromString(config.getString(name + ".uuid", ""));
+                OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
+                String password = config.getString(name + ".password-2nd", name + "123456");
+                this.players.computeIfAbsent(uuid, u -> {
+                    AuthPlayer authPlayer = new AuthPlayerImpl(player);
+                    authPlayer.setPassword2nd(password);
+                    return authPlayer;
+                });
             });
         });
     }
@@ -162,10 +167,12 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
             while (rs.next()) {
                 UUID uuid = UUID.fromString(rs.getString("uuid"));
                 String password = rs.getString("password_2nd");
-                this.players.computeIfAbsent(uuid, u -> {
-                    AuthPlayer authPlayer = new AuthPlayerImpl(Bukkit.getOfflinePlayer(uuid));
-                    authPlayer.setPassword2nd(password);
-                    return authPlayer;
+                pool.submit(() -> {
+                    this.players.computeIfAbsent(uuid, u -> {
+                        AuthPlayer authPlayer = new AuthPlayerImpl(Bukkit.getOfflinePlayer(uuid));
+                        authPlayer.setPassword2nd(password);
+                        return authPlayer;
+                    });
                 });
             }
         } catch (Exception e) {

@@ -12,6 +12,7 @@ import com.github.tezvn.authenticator.impl.player.input.LoginInputImpl;
 import com.github.tezvn.authenticator.impl.player.input.PasswordUpdateInputImpl;
 import com.github.tezvn.authenticator.impl.player.input.RegisterInputImpl;
 import com.github.tezvn.authenticator.impl.utils.MessageUtils;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import fr.xephi.authme.api.v3.AuthMeApi;
 import org.bukkit.Bukkit;
@@ -27,8 +28,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.geysermc.cumulus.response.CustomFormResponse;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public abstract class DataHandlerImpl implements DataHandler, Listener {
 
@@ -109,6 +113,10 @@ public abstract class DataHandlerImpl implements DataHandler, Listener {
         return getAuthMeConfig() == null ? 30 : getAuthMeConfig().getInt("settings.security.passwordMaxLength", 30);
     }
 
+    protected String getSpecialCharacters() {
+        return getAuthMeConfig() == null ? "" : getAuthMeConfig().getString("settings.restrictions.allowedPasswordCharacters");
+    }
+
     protected FileConfiguration getAuthMeConfig() {
         File file = new File("plugins/AuthMe/config.yml");
         if (!file.exists())
@@ -120,7 +128,12 @@ public abstract class DataHandlerImpl implements DataHandler, Listener {
         return password == null || password.isEmpty()
                 || password.length() < getMinPasswordLength()
                 || password.length() > getMaxPasswordLength()
-                || MessageUtils.checkSpecialCharacters(password);
+                || checkCharacters(password);
+    }
+
+    protected boolean checkCharacters(String str) {
+        return Arrays.stream(str.split(""))
+                .anyMatch(s -> s.matches(getSpecialCharacters()));
     }
 
     protected void addMetadata(Player player, String key, int cooldown) {

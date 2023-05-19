@@ -40,8 +40,7 @@ public final class AuthenticatorPluginImpl extends JavaPlugin implements Authent
 
     @Override
     public void onDisable() {
-        if (this.playerManager != null)
-            this.playerManager.save();
+
     }
 
     @Override
