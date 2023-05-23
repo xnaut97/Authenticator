@@ -38,8 +38,6 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
 
     private final Map<Platform, DataHandler> playerHandlers = Maps.newHashMap();
 
-    private final ExecutorService pool = Executors.newFixedThreadPool(6);
-
     public PlayerManagerImpl(AuthenticatorPluginImpl plugin) {
         this.plugin = plugin;
         new BPPlayerHandlerImpl(this);
@@ -121,19 +119,17 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
         }
         FileConfiguration config = YamlConfiguration.loadConfiguration(file);
         config.getKeys(false).forEach(name -> {
-            pool.submit(() -> {
-                UUID uuid = UUID.fromString(config.getString(name + ".uuid", ""));
-                OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
-                String password = config.getString(name + ".password-2nd", name + "123456");
-                this.players.computeIfAbsent(uuid, u -> {
-                    AuthPlayer authPlayer = new AuthPlayerImpl(player);
-                    authPlayer.setPassword2nd(password);
-                    return authPlayer;
-                });
+            UUID uuid = UUID.fromString(config.getString(name + ".uuid", ""));
+            OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
+            String password = config.getString(name + ".password-2nd", name + "123456");
+            this.players.computeIfAbsent(uuid, u -> {
+                AuthPlayer authPlayer = new AuthPlayerImpl(player);
+                authPlayer.setPassword2nd(password);
+                return authPlayer;
             });
         });
-        if(this.players.size() > 0)
-            plugin.getLogger().info("Loaded " + players.size() + " players from database!");
+        if (this.players.size() > 0)
+            plugin.getLogger().info("Loaded " + players.size() + " players from local!");
     }
 
     public void saveToDatabase() {
@@ -148,7 +144,7 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
         if (database == null || !database.isConnected())
             return;
         String tableName = plugin.getConfig().getString("database.table-name", null);
-        if(tableName == null)
+        if (tableName == null)
             return;
         database.addOrUpdate(tableName,
                 new DatabaseInsertion("uuid", authPlayer.getPlayer().getUniqueId().toString()),
@@ -170,19 +166,17 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
             while (rs.next()) {
                 UUID uuid = UUID.fromString(rs.getString("uuid"));
                 String password = rs.getString("password_2nd");
-                pool.submit(() -> {
-                    this.players.computeIfAbsent(uuid, u -> {
-                        AuthPlayer authPlayer = new AuthPlayerImpl(Bukkit.getOfflinePlayer(uuid));
-                        authPlayer.setPassword2nd(password);
-                        return authPlayer;
-                    });
+                this.players.computeIfAbsent(uuid, u -> {
+                    AuthPlayer authPlayer = new AuthPlayerImpl(Bukkit.getOfflinePlayer(uuid));
+                    authPlayer.setPassword2nd(password);
+                    return authPlayer;
                 });
             }
+            if (this.players.size() > 0)
+                plugin.getLogger().info("Loaded " + players.size() + " players from database!");
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if(this.players.size() > 0)
-            plugin.getLogger().info("Loaded " + players.size() + " players from database!");
     }
 
     @EventHandler

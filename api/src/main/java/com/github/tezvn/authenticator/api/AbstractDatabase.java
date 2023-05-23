@@ -245,7 +245,7 @@ public abstract class AbstractDatabase {
             if (!isConnected())
                 return null;
             try {
-                PreparedStatement statement = getConnection().prepareStatement("SELECT * FROM `" + table + "`");
+                PreparedStatement statement = getConnection().prepareStatement("SELECT * FROM " + table);
                 return statement.executeQuery();
             } catch (Exception e) {
                 e.printStackTrace();
