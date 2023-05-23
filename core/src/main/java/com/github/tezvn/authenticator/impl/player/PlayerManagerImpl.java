@@ -132,6 +132,8 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
                 });
             });
         });
+        if(this.players.size() > 0)
+            plugin.getLogger().info("Loaded " + players.size() + " players from database!");
     }
 
     public void saveToDatabase() {
@@ -160,7 +162,8 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
         MySQL database = plugin.getDatabase();
         if (database == null || !database.isConnected())
             return;
-        ResultSet rs = database.getData("user");
+        String tableName = plugin.getConfig().getString("database.table-name", "user");
+        ResultSet rs = database.getData(tableName);
         if (rs == null)
             return;
         try {
@@ -178,6 +181,8 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        if(this.players.size() > 0)
+            plugin.getLogger().info("Loaded " + players.size() + " players from database!");
     }
 
     @EventHandler
@@ -190,13 +195,13 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
             handler.onExecute(player);
     }
 
-    @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        AuthPlayer authPlayer = getPlayer(event.getPlayer());
-        if (authPlayer == null)
-            return;
-        saveToLocal(authPlayer);
-        saveToDatabase(authPlayer);
-    }
+//    @EventHandler
+//    public void onPlayerQuit(PlayerQuitEvent event) {
+//        AuthPlayer authPlayer = getPlayer(event.getPlayer());
+//        if (authPlayer == null)
+//            return;
+//        saveToLocal(authPlayer);
+//        saveToDatabase(authPlayer);
+//    }
 
 }

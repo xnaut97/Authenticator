@@ -28,7 +28,8 @@ public abstract class AbstractDatabase {
     public AbstractDatabase(Plugin plugin, String username, String password, String name, String host) {
         this.plugin = plugin;
         this.username = username;
-        this.password = password;
+        if (password.length() > 0)
+            this.password = password;
         this.name = name;
         this.host = host;
     }
@@ -126,7 +127,7 @@ public abstract class AbstractDatabase {
 
         public boolean createTable(String name, AbstractDatabase.DatabaseElement... elements) {
             try {
-                if (hasTable(name) || !isConnected())
+                if (!isConnected() || hasTable(name))
                     return false;
                 StringBuilder builder = new StringBuilder("CREATE TABLE `" + name + "` (");
                 for (AbstractDatabase.DatabaseElement element : elements) {
@@ -206,9 +207,9 @@ public abstract class AbstractDatabase {
         }
 
         public boolean addOrUpdate(String table, DatabaseInsertion check, DatabaseInsertion... insertions) {
-            if(check != null) {
+            if (check != null) {
                 boolean found = has(table, check.getKey(), check.getKey(), check.getValue());
-                if(found)
+                if (found)
                     return update(table, check, insertions);
             }
             return add(table, insertions);
