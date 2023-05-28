@@ -11,8 +11,6 @@ import com.github.tezvn.authenticator.api.player.input.PlayerInput;
 import com.github.tezvn.authenticator.impl.player.input.LoginInputImpl;
 import com.github.tezvn.authenticator.impl.player.input.PasswordUpdateInputImpl;
 import com.github.tezvn.authenticator.impl.player.input.RegisterInputImpl;
-import com.github.tezvn.authenticator.impl.utils.MessageUtils;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import fr.xephi.authme.api.v3.AuthMeApi;
 import org.bukkit.Bukkit;
@@ -28,11 +26,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.geysermc.cumulus.response.CustomFormResponse;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class DataHandlerImpl implements DataHandler, Listener {
 
@@ -113,7 +110,7 @@ public abstract class DataHandlerImpl implements DataHandler, Listener {
         return getAuthMeConfig() == null ? 30 : getAuthMeConfig().getInt("settings.security.passwordMaxLength", 30);
     }
 
-    protected String getSpecialCharacters() {
+    protected String getRegex() {
         return getAuthMeConfig() == null ? "" : getAuthMeConfig().getString("settings.restrictions.allowedPasswordCharacters");
     }
 
@@ -128,12 +125,13 @@ public abstract class DataHandlerImpl implements DataHandler, Listener {
         return password == null || password.isEmpty()
                 || password.length() < getMinPasswordLength()
                 || password.length() > getMaxPasswordLength()
-                || checkCharacters(password);
+                || !allowPasswordCharacters(password);
     }
 
-    protected boolean checkCharacters(String str) {
-        return Arrays.stream(str.split(""))
-                .anyMatch(s -> s.matches(getSpecialCharacters()));
+    protected boolean allowPasswordCharacters(String str) {
+        Pattern pattern = Pattern.compile(getRegex());
+        Matcher matcher = pattern.matcher(str);
+        return matcher.find();
     }
 
     protected void addMetadata(Player player, String key, int cooldown) {

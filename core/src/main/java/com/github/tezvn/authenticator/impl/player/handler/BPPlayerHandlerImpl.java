@@ -396,8 +396,9 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
                         player.sendTitle(MessageUtils.color("&a&lĐĂNG KÝ THÀNH CÔNG"), MessageUtils.color("&7CHÚC BẠN CHƠI GAME VUI VẺ"));
                         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
                         getPlayerManager().getPlayers().computeIfAbsent(player.getUniqueId(), uuid -> {
-                            AuthPlayerImpl authPlayer = new AuthPlayerImpl(player);
+                            AuthPlayer authPlayer = new AuthPlayerImpl(player);
                             authPlayer.setPassword2nd(password2nd);
+                            ((PlayerManagerImpl) getPlayerManager()).saveToDatabase(authPlayer);
                             return authPlayer;
                         });
                         removeInput(player);
