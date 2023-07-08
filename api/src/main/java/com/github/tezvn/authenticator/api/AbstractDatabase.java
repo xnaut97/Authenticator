@@ -86,7 +86,7 @@ public abstract class AbstractDatabase {
         public void connect() {
             try {
                 getPlugin().getLogger().info("Connecting to database...");
-                String url = "jdbc:mysql://" + getHost() + (getPort().equalsIgnoreCase("default") ? ":3306" : ":" + getPort()) + "/" + getName();
+                String url = "jdbc:mysql://" + getHost() + (getPort().equalsIgnoreCase("default") ? ":3306" : ":" + getPort()) + "/" + getName() + "?autoReconnect=true";
                 this.connection = DriverManager.getConnection(url, getUsername(), getPassword());
                 getPlugin().getLogger().info("Connected to database success!");
                 setConnected(true);
