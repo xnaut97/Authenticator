@@ -1,18 +1,17 @@
 package com.github.tezvn.authenticator.impl;
 
+import com.github.tezvn.authenticator.api.AbstractDatabase.MySQL;
 import com.github.tezvn.authenticator.api.AuthenticatorPlugin;
 import com.github.tezvn.authenticator.api.player.PlayerManager;
 import com.github.tezvn.authenticator.impl.commands.NewPasswordCommand;
 import com.github.tezvn.authenticator.impl.commands.PasswordCreateCommand;
 import com.github.tezvn.authenticator.impl.commands.PasswordRecoveryCommand;
 import com.github.tezvn.authenticator.impl.player.PlayerManagerImpl;
-import com.github.tezvn.authenticator.api.AbstractDatabase.MySQL;
-import fr.xephi.authme.settings.commandconfig.CommandManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import static com.github.tezvn.authenticator.api.AbstractDatabase.*;
+import static com.github.tezvn.authenticator.api.AbstractDatabase.DatabaseElement;
 
 public final class AuthenticatorPluginImpl extends JavaPlugin implements AuthenticatorPlugin {
 
@@ -40,7 +39,9 @@ public final class AuthenticatorPluginImpl extends JavaPlugin implements Authent
 
     @Override
     public void onDisable() {
-
+        if (database != null && database.getDataSource() != null && !database.getDataSource().isClosed()){
+            database.getDataSource().close();
+        }
     }
 
     @Override
@@ -62,7 +63,11 @@ public final class AuthenticatorPluginImpl extends JavaPlugin implements Authent
         String host = getConfig().getString("database.host", "localhost");
         String port = getConfig().getString("database.port", "3306");
         String tableName = getConfig().getString("database.table-name", "user");
-        this.database = new MySQL(this, username, password, name, host, port);
+        int poolSize = getConfig().getInt("database.pool.max-pool-size", 10);
+        int timeout = getConfig().getInt("database.pool.timeout", 5000);
+        int idleTimeout = getConfig().getInt("database.pool.idle-timeout", 600000);
+        int lifeTime = getConfig().getInt("database.pool.max-life-time", 1800000);
+        this.database = new MySQL(this, username, password, name, host, port, poolSize, timeout, idleTimeout, lifeTime);
         if (!this.database.isConnected()) {
             getLogger().info("Use local cache instead.");
             return;

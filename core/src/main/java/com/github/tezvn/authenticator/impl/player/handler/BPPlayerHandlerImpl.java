@@ -1,11 +1,15 @@
 package com.github.tezvn.authenticator.impl.player.handler;
 
 import com.cryptomorin.xseries.XSound;
+import com.github.tezvn.authenticator.api.AuthenticatorPlugin;
 import com.github.tezvn.authenticator.api.events.PlayerSignInEvent;
 import com.github.tezvn.authenticator.api.player.AuthPlayer;
 import com.github.tezvn.authenticator.api.player.handler.BPPlayerHandler;
 import com.github.tezvn.authenticator.api.player.handler.Platform;
-import com.github.tezvn.authenticator.api.player.input.*;
+import com.github.tezvn.authenticator.api.player.input.InputType;
+import com.github.tezvn.authenticator.api.player.input.LoginInput;
+import com.github.tezvn.authenticator.api.player.input.PasswordUpdateInput;
+import com.github.tezvn.authenticator.api.player.input.RegisterInput;
 import com.github.tezvn.authenticator.impl.player.AuthPlayerImpl;
 import com.github.tezvn.authenticator.impl.player.AuthenticatorEvents;
 import com.github.tezvn.authenticator.impl.player.PlayerManagerImpl;
@@ -21,8 +25,11 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
 
     private final FloodgateApi floodgateApi = FloodgateApi.getInstance();
 
+    private final AuthenticatorPlugin plugin;
+
     public BPPlayerHandlerImpl(PlayerManagerImpl playerManager) {
         super(playerManager, Platform.BEDROCK_OR_POCKET_EDITION);
+        this.plugin = playerManager.getPlugin();
         playerManager.registerHandler(this);
     }
 
@@ -116,16 +123,26 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
                         openPassword2ndSetupForm(player);
                         return;
                     }
-                    XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
+
+                    Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                        try {
+                            getPlayerManager().getPlayers().computeIfAbsent(player.getUniqueId(), uuid -> {
+                                AuthPlayerImpl authPlayer = new AuthPlayerImpl(player);
+                                authPlayer.setPassword2nd(password);
+                                ((PlayerManagerImpl) getPlayerManager()).saveToLocal(authPlayer);
+                                ((PlayerManagerImpl) getPlayerManager()).saveToDatabase(authPlayer);
+                                return authPlayer;
+                            });
+                        } catch (Exception e){
+                            plugin.getLogger().severe(String.format("An error occurred while saving %s's data", player.getName()));
+                            e.printStackTrace();
+                        }
+
+                        XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
 //                            openLoginSelectionForm(player, 0);
-                    MessageUtils.sendTitle(player, "&a&lTHIẾT LẬP THÀNH CÔNG");
-                    getPlayerManager().getPlayers().computeIfAbsent(player.getUniqueId(), uuid -> {
-                        AuthPlayerImpl authPlayer = new AuthPlayerImpl(player);
-                        authPlayer.setPassword2nd(password);
-                        ((PlayerManagerImpl) getPlayerManager()).saveToLocal(authPlayer);
-                        ((PlayerManagerImpl) getPlayerManager()).saveToDatabase(authPlayer);
-                        return authPlayer;
+                        MessageUtils.sendTitle(player, "&a&lTHIẾT LẬP THÀNH CÔNG");
                     });
+
                 })
                 .closedOrInvalidResultHandler(() -> openPassword2ndSetupForm(player))
                 .build());
@@ -393,15 +410,23 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
                             return;
                         }
                         getAuthMeApi().forceRegister(player, password);
-                        player.sendTitle(MessageUtils.color("&a&lĐĂNG KÝ THÀNH CÔNG"), MessageUtils.color("&7CHÚC BẠN CHƠI GAME VUI VẺ"));
-                        XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
-                        getPlayerManager().getPlayers().computeIfAbsent(player.getUniqueId(), uuid -> {
-                            AuthPlayer authPlayer = new AuthPlayerImpl(player);
-                            authPlayer.setPassword2nd(password2nd);
-                            ((PlayerManagerImpl) getPlayerManager()).saveToDatabase(authPlayer);
-                            return authPlayer;
+                        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                           try {
+                               getPlayerManager().getPlayers().computeIfAbsent(player.getUniqueId(), uuid -> {
+                                   AuthPlayer authPlayer = new AuthPlayerImpl(player);
+                                   authPlayer.setPassword2nd(password2nd);
+                                   ((PlayerManagerImpl) getPlayerManager()).saveToDatabase(authPlayer);
+                                   return authPlayer;
+                               });
+                           } catch (Exception e){
+                               plugin.getLogger().severe(String.format("An error occurred while saving %s's data", player.getName()));
+                               e.printStackTrace();
+                           }
+
+                            player.sendTitle(MessageUtils.color("&a&lĐĂNG KÝ THÀNH CÔNG"), MessageUtils.color("&7CHÚC BẠN CHƠI GAME VUI VẺ"));
+                            XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
+                            removeInput(player);
                         });
-                        removeInput(player);
                     })
                     .closedOrInvalidResultHandler(response -> {
                         player.kickPlayer(MessageUtils.color("&cĐĂNG KÝ THẤT BẠI, XIN THỬ LẠI"));

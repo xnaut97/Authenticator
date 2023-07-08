@@ -18,7 +18,7 @@
     </parent>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -54,6 +54,10 @@
                                 <relocation>
                                     <pattern>net.wesjd.anvilgui</pattern>
                                     <shadedPattern>com.github.tezvn.authenticator.anvilgui</shadedPattern> <!-- Replace [YOUR_PLUGIN_PACKAGE] with your namespace -->
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.zaxxer.hikari</pattern>
+                                    <shadedPattern>com.github.tezvn.authenticator.hikari</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
@@ -119,13 +123,24 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.26</version>
+            <version>1.18.28</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.github.tezvn.authenticator</groupId>
             <artifactId>api</artifactId>
             <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.0.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>

@@ -1,15 +1,15 @@
 package com.github.tezvn.authenticator.impl.player;
 
-import com.github.tezvn.authenticator.impl.player.handler.BPPlayerHandlerImpl;
-import com.github.tezvn.authenticator.impl.player.handler.DataHandlerImpl;
-import com.github.tezvn.authenticator.impl.player.handler.JavaPlayerHandlerImpl;
-import com.github.tezvn.authenticator.impl.AuthenticatorPluginImpl;
 import com.github.tezvn.authenticator.api.AbstractDatabase.MySQL;
 import com.github.tezvn.authenticator.api.AuthenticatorPlugin;
 import com.github.tezvn.authenticator.api.player.AuthPlayer;
 import com.github.tezvn.authenticator.api.player.PlayerManager;
 import com.github.tezvn.authenticator.api.player.handler.DataHandler;
 import com.github.tezvn.authenticator.api.player.handler.Platform;
+import com.github.tezvn.authenticator.impl.AuthenticatorPluginImpl;
+import com.github.tezvn.authenticator.impl.player.handler.BPPlayerHandlerImpl;
+import com.github.tezvn.authenticator.impl.player.handler.DataHandlerImpl;
+import com.github.tezvn.authenticator.impl.player.handler.JavaPlayerHandlerImpl;
 import com.google.common.collect.Maps;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -19,14 +19,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.*;
 
 import static com.github.tezvn.authenticator.api.AbstractDatabase.DatabaseInsertion;
 
@@ -159,10 +159,11 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
         if (database == null || !database.isConnected())
             return;
         String tableName = plugin.getConfig().getString("database.table-name", "user");
-        ResultSet rs = database.getData(tableName);
-        if (rs == null)
-            return;
-        try {
+        try (Connection connection = plugin.getDatabase().getConnection()){
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM " + tableName);
+            ResultSet rs = statement.executeQuery();
+            if (rs == null)
+                return;
             while (rs.next()) {
                 UUID uuid = UUID.fromString(rs.getString("uuid"));
                 String password = rs.getString("password_2nd");

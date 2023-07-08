@@ -6,7 +6,6 @@ import com.github.tezvn.authenticator.api.events.PlayerPasswordCreateEvent;
 import com.github.tezvn.authenticator.api.player.AuthPlayer;
 import com.github.tezvn.authenticator.api.player.PlayerManager;
 import com.github.tezvn.authenticator.impl.player.AuthPlayerImpl;
-import com.github.tezvn.authenticator.impl.player.AuthenticatorEvents;
 import com.github.tezvn.authenticator.impl.player.PlayerManagerImpl;
 import com.github.tezvn.authenticator.impl.utils.MessageUtils;
 import org.bukkit.Bukkit;
@@ -19,13 +18,16 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-import static com.github.tezvn.authenticator.api.events.PlayerPasswordCreateEvent.*;
+import static com.github.tezvn.authenticator.api.events.PlayerPasswordCreateEvent.RestrictionType;
 
 public class PasswordCreateCommand implements CommandExecutor, TabCompleter {
 
     private final PlayerManager playerManager;
 
+    private final  AuthenticatorPlugin plugin;
+
     public PasswordCreateCommand(AuthenticatorPlugin plugin) {
+        this.plugin = plugin;
 //        super(commandManager.getPlugin(), "taomatkhaucap2",
 //                "Tạo mật khẩu cấp 2",
 //                "/taomatkhaucap2 [mật khẩu] [nhập lại mật khẩu]", Collections.emptyList());
@@ -80,14 +82,25 @@ public class PasswordCreateCommand implements CommandExecutor, TabCompleter {
             MessageUtils.sendMessage(player, "&cMật khẩu nhập lại không trùng khớp, vui lòng thử lại.");
             return;
         }
-        MessageUtils.sendTitle(player, "&a&lTHIẾT LẬP THÀNH CÔNG");
-        XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
-        getPlayerManager().getPlayers().computeIfAbsent(player.getUniqueId(), uuid -> {
-            AuthPlayerImpl newData = new AuthPlayerImpl(player);
-            newData.setPassword2nd(event.getPassword());
-            ((PlayerManagerImpl) getPlayerManager()).saveToLocal(newData);
-            ((PlayerManagerImpl) getPlayerManager()).saveToDatabase(newData);
-            return newData;
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                getPlayerManager().getPlayers().computeIfAbsent(player.getUniqueId(), uuid -> {
+                    AuthPlayerImpl newData = new AuthPlayerImpl(player);
+                    newData.setPassword2nd(event.getPassword());
+                    ((PlayerManagerImpl) getPlayerManager()).saveToLocal(newData);
+                    ((PlayerManagerImpl) getPlayerManager()).saveToDatabase(newData);
+                    return newData;
+                });
+            } catch (Exception e){
+                plugin.getLogger().severe(String.format("An error occurred while saving %s's data", player.getName()));
+                e.printStackTrace();
+            }
+
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                MessageUtils.sendTitle(player, "&a&lTHIẾT LẬP THÀNH CÔNG");
+                XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
+            });
+
         });
     }
 
