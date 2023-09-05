@@ -11,3 +11,12 @@ commands:
     usage: /khoiphucmatkhau
   matkhaumoi:
     usage: /matkhaumoi [mật khẩu] [nhập lại mật khẩu]
+  cleanduplicate:
+    usage: /cleanduplicate
+permissions:
+  authenticator.pc.bypass:
+    default: false
+    description: Allow PC player join server by PE username.
+  authenticator.command.cleanduplicate:
+    default: op
+    description: Allow player to clean duplicate accounts.

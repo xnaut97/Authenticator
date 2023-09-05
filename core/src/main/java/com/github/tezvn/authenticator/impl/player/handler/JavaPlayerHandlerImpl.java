@@ -5,7 +5,9 @@ import com.github.tezvn.authenticator.api.player.handler.JavaPlayerHandler;
 import com.github.tezvn.authenticator.api.player.handler.Platform;
 import com.github.tezvn.authenticator.impl.player.PlayerManagerImpl;
 import com.github.tezvn.authenticator.impl.utils.MessageUtils;
+import fr.xephi.authme.events.AuthMeAsyncPreRegisterEvent;
 import fr.xephi.authme.events.LoginEvent;
+import fr.xephi.authme.events.RegisterEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
@@ -40,6 +42,12 @@ public class JavaPlayerHandlerImpl extends DataHandlerImpl implements JavaPlayer
                         "&cLệnh tạo mật khẩu cấp 2: &6/taomatkhaucap2 [mật khẩu] [nhập lại mật khẩu]");
             }
         }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        if(getInput(event.getPlayer()) != null)
+            removeInput(event.getPlayer());
     }
 
     @EventHandler

@@ -42,6 +42,8 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
 
     private void openLoginSelectionForm(Player player, int delay) {
         runDelayed(delay, () -> {
+            if(!FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId()))
+                return;
             floodgateApi.getPlayer(player.getUniqueId()).sendForm(SimpleForm.builder()
                     .button("ĐĂNG NHẬP")
                     .optionalButton("KHÔI PHỤC MẬT KHẨU", getPlayerManager().getPlayer(player) != null)
@@ -71,6 +73,8 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
 
     private void openPassword2ndSetupForm(Player player) {
         RegisterInput input = getOrCreate(player, InputType.REGISTER);
+        if(!FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId()))
+            return;
         floodgateApi.getPlayer(player.getUniqueId()).sendForm(CustomForm.builder()
                 .title("THIẾT LẬP MẬT KHẨU CẤP 2")
                 .label(MessageUtils.color("&cVì lý do bảo mật nên mỗi người chơi đều phải" +
@@ -119,20 +123,24 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
                     XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
 //                            openLoginSelectionForm(player, 0);
                     MessageUtils.sendTitle(player, "&a&lTHIẾT LẬP THÀNH CÔNG");
+                    removeInput(player);
                     getPlayerManager().getPlayers().computeIfAbsent(player.getUniqueId(), uuid -> {
                         AuthPlayerImpl authPlayer = new AuthPlayerImpl(player);
                         authPlayer.setPassword2nd(password);
-                        ((PlayerManagerImpl) getPlayerManager()).saveToLocal(authPlayer);
                         ((PlayerManagerImpl) getPlayerManager()).saveToDatabase(authPlayer);
                         return authPlayer;
                     });
                 })
-                .closedOrInvalidResultHandler(() -> openPassword2ndSetupForm(player))
+                .closedOrInvalidResultHandler(() -> {
+                    openPassword2ndSetupForm(player);
+                })
                 .build());
     }
 
     private void openLoginForm(Player player) {
         LoginInput input = getOrCreate(player, InputType.LOGIN);
+        if(!FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId()))
+            return;
         floodgateApi.getPlayer(player.getUniqueId()).sendForm(CustomForm.builder()
                 .title("ĐĂNG NHẬP")
                 .input("Mật khẩu", "Nhập mật khẩu...",
@@ -174,12 +182,15 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
                         openPassword2ndSetupForm(player);
                 })
                 .closedOrInvalidResultHandler(response -> {
+                    removeInput(player);
                     openLoginSelectionForm(player, 0);
                 })
                 .build());
     }
 
     private void openAskingForm(Player player) {
+        if(!FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId()))
+            return;
         floodgateApi.getPlayer(player.getUniqueId()).sendForm(SimpleForm.builder()
                 .title("ĐĂNG NHẬP")
                 .content("Bạn đã nhập sai mật khẩu quá nhiều lần, có muốn khôi phục lại mật khẩu không?")
@@ -188,12 +199,8 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
                 .validResultHandler(response -> {
                     int id = response.clickedButtonId();
                     switch (id) {
-                        case 0:
-                            openPassword2ndCheckingForm(player);
-                            break;
-                        case 1:
-                            openLoginForm(player);
-                            break;
+                        case 0 -> openPassword2ndCheckingForm(player);
+                        case 1 -> openLoginForm(player);
                     }
                 })
                 .closedOrInvalidResultHandler(() -> openLoginForm(player))
@@ -203,6 +210,8 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
     private void openPassword2ndCheckingForm(Player player) {
         AuthPlayer authPlayer = getPlayerManager().getPlayer(player);
         RegisterInput input = getOrCreate(player, InputType.REGISTER);
+        if(!FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId()))
+            return;
         floodgateApi.getPlayer(player.getUniqueId()).sendForm(CustomForm.builder()
                 .title("KHÔI PHUC MẬT KHẨU")
                 .label(MessageUtils.color("&7[&4&l!&7] &cDùng mật khẩu cấp 2 để khôi phục"))
@@ -244,6 +253,8 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
     private void openResetPasswordForm(Player player) {
         runDelayed(0, () -> {
             PasswordUpdateInput input = getOrCreate(player, InputType.PASSWORD_UPDATE);
+            if(!FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId()))
+                return;
             floodgateApi.getPlayer(player.getUniqueId()).sendForm(CustomForm.builder()
                     .title("KHÔI PHỤC MẬT KHẨU")
 
@@ -289,10 +300,10 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
                             return;
                         }
                         getAuthMeApi().changePassword(player.getName(), password);
+                        removeInput(player);
                         player.kickPlayer(MessageUtils.color("&a&lKHÔI PHỤC MẬT KHẨU THÀNH CÔNG, VUI LÒNG ĐĂNG NHẬP LẠI."));
                     })
                     .closedOrInvalidResultHandler(response -> {
-                        removeInput(player);
                         if (!getAuthMeApi().isAuthenticated(player))
                             openResetPasswordForm(player);
                     })
@@ -302,6 +313,8 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
 
     private void openResetPasswordResult(Player player) {
         runDelayed(0, () -> {
+            if(!FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId()))
+                return;
             floodgateApi.getPlayer(player.getUniqueId()).sendForm(SimpleForm.builder()
                     .title("KHÔI PHỤC MẬT KHẨU")
                     .content(MessageUtils.color("&aĐANG XỬ LÝ YÊU CẦU CỦA BẠN . . ."))
@@ -317,7 +330,8 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
     private void openRegisterForm(Player player, int delay) {
         runDelayed(delay, () -> {
             RegisterInput input = getOrCreate(player, InputType.REGISTER);
-
+            if(!FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId()))
+                return;
             floodgateApi.getPlayer(player.getUniqueId()).sendForm(CustomForm.builder()
                     .title("ĐĂNG KÝ TÀI KHOẢN")
                     //Main password
@@ -392,7 +406,7 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
                             openRegisterForm(player, 0);
                             return;
                         }
-                        getAuthMeApi().forceRegister(player, password);
+                        getAuthMeApi().registerPlayer(player.getName(), password);
                         player.sendTitle(MessageUtils.color("&a&lĐĂNG KÝ THÀNH CÔNG"), MessageUtils.color("&7CHÚC BẠN CHƠI GAME VUI VẺ"));
                         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
                         getPlayerManager().getPlayers().computeIfAbsent(player.getUniqueId(), uuid -> {
@@ -404,6 +418,7 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
                         removeInput(player);
                     })
                     .closedOrInvalidResultHandler(response -> {
+                        removeInput(player);
                         player.kickPlayer(MessageUtils.color("&cĐĂNG KÝ THẤT BẠI, XIN THỬ LẠI"));
                     })
                     .build());

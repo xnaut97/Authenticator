@@ -21,6 +21,11 @@ public final class AuthPlayerImpl implements AuthPlayer {
     }
 
     @Override
+    public UUID getUniqueId() {
+        return uniqueId;
+    }
+
+    @Override
     public OfflinePlayer getPlayer() {
         return Bukkit.getOfflinePlayer(this.uniqueId);
     }

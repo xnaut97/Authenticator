@@ -82,7 +82,7 @@ public abstract class DataHandlerImpl implements DataHandler, Listener {
                 if (runnable != null)
                     runnable.run();
             }
-        }.runTaskLater(plugin, delay > 0 ? 20L * delay : 1);
+        }.runTaskLater(plugin, 20L * delay);
     }
 
     protected String getInput(CustomFormResponse response, int index) {
@@ -151,17 +151,11 @@ public abstract class DataHandlerImpl implements DataHandler, Listener {
     protected <T extends AbstractInput> T getOrCreate(Player player, InputType type) {
         T input = getInput(player);
         if (input == null) {
-            switch (type) {
-                case LOGIN:
-                    input = (T) new LoginInputImpl(player);
-                    break;
-                case REGISTER:
-                    input = (T) new RegisterInputImpl(player);
-                    break;
-                case PASSWORD_UPDATE:
-                    input = (T) new PasswordUpdateInputImpl(player);
-                    break;
-            }
+            input = switch (type) {
+                case LOGIN -> (T) new LoginInputImpl(player);
+                case REGISTER -> (T) new RegisterInputImpl(player);
+                case PASSWORD_UPDATE -> (T) new PasswordUpdateInputImpl(player);
+            };
             addInput(input);
         }
         return input;

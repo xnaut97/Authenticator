@@ -7,3 +7,14 @@ database:
   name: 'authenticator'
   host: 'localhost'
   port: 'default'
+  # Connection pool config
+  pool:
+    # Số lượng kết nối tối đa trong pool (Mặc định: 10)
+    max-pool-size: 10
+    # Các chỉ số dưới đây sử dụng đơn vị ms! 1s = 1000ms
+    # Thời gian chờ tối đa để lấy kết nối từ pool (5 giây)
+    timeout: 5000
+    # Thời gian tối đa mà một kết nối có thể ở trạng thái chờ (10 phút)
+    idle-timeout: 600000
+    # Thời gian tối đa mà một kết nối có thể sống (30 phút)
+    max-life-time: 1800000

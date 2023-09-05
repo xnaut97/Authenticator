@@ -85,7 +85,6 @@ public class PasswordCreateCommand implements CommandExecutor, TabCompleter {
         getPlayerManager().getPlayers().computeIfAbsent(player.getUniqueId(), uuid -> {
             AuthPlayerImpl newData = new AuthPlayerImpl(player);
             newData.setPassword2nd(event.getPassword());
-            ((PlayerManagerImpl) getPlayerManager()).saveToLocal(newData);
             ((PlayerManagerImpl) getPlayerManager()).saveToDatabase(newData);
             return newData;
         });

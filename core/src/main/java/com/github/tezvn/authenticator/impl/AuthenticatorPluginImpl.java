@@ -2,6 +2,7 @@ package com.github.tezvn.authenticator.impl;
 
 import com.github.tezvn.authenticator.api.AuthenticatorPlugin;
 import com.github.tezvn.authenticator.api.player.PlayerManager;
+import com.github.tezvn.authenticator.impl.commands.CleanCommand;
 import com.github.tezvn.authenticator.impl.commands.NewPasswordCommand;
 import com.github.tezvn.authenticator.impl.commands.PasswordCreateCommand;
 import com.github.tezvn.authenticator.impl.commands.PasswordRecoveryCommand;
@@ -54,7 +55,7 @@ public final class AuthenticatorPluginImpl extends JavaPlugin implements Authent
 
     private void setupDatabase() {
         boolean toggle = getConfig().getBoolean("database.toggle", true);
-        if (!toggle)
+        if(!toggle)
             return;
         String username = getConfig().getString("database.username", "root");
         String password = getConfig().getString("database.password", "password");
@@ -62,8 +63,12 @@ public final class AuthenticatorPluginImpl extends JavaPlugin implements Authent
         String host = getConfig().getString("database.host", "localhost");
         String port = getConfig().getString("database.port", "3306");
         String tableName = getConfig().getString("database.table-name", "user");
-        this.database = new MySQL(this, username, password, name, host, port);
-        if (!this.database.isConnected()) {
+        int poolSize = getConfig().getInt("database.pool.max-pool-size", 10);
+        int timeout = getConfig().getInt("database.pool.timeout", 5000);
+        int idleTimeout = getConfig().getInt("database.pool.idle-timeout", 600000);
+        int lifeTime = getConfig().getInt("database.pool.max-life-time", 1800000);
+        this.database = new MySQL(this, username, password, name, host, port, poolSize, timeout, idleTimeout, lifeTime);
+        if(!this.database.isConnected()) {
             getLogger().info("Use local cache instead.");
             return;
         }
@@ -90,6 +95,10 @@ public final class AuthenticatorPluginImpl extends JavaPlugin implements Authent
         if (command3 != null) {
             command3.setExecutor(new NewPasswordCommand(this));
             command3.setTabCompleter(new NewPasswordCommand(this));
+        }
+        PluginCommand command4 = getCommand("cleanduplicate");
+        if (command3 != null) {
+            command4.setExecutor(new CleanCommand(this));
         }
     }
 
