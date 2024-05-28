@@ -3,7 +3,7 @@ package com.github.tezvn.authenticator.impl.player.handler;
 import com.cryptomorin.xseries.XSound;
 import com.github.tezvn.authenticator.api.events.PlayerSignInEvent;
 import com.github.tezvn.authenticator.api.player.AuthPlayer;
-import com.github.tezvn.authenticator.api.player.handler.BPPlayerHandler;
+import com.github.tezvn.authenticator.api.player.handler.PEPlayerHandler;
 import com.github.tezvn.authenticator.api.player.handler.Platform;
 import com.github.tezvn.authenticator.api.player.input.*;
 import com.github.tezvn.authenticator.impl.player.AuthPlayerImpl;
@@ -17,11 +17,11 @@ import org.geysermc.cumulus.form.CustomForm;
 import org.geysermc.cumulus.form.SimpleForm;
 import org.geysermc.floodgate.api.FloodgateApi;
 
-public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHandler {
+public class PEPlayerHandlerImpl extends DataHandlerImpl implements PEPlayerHandler {
 
     private final FloodgateApi floodgateApi = FloodgateApi.getInstance();
 
-    public BPPlayerHandlerImpl(PlayerManagerImpl playerManager) {
+    public PEPlayerHandlerImpl(PlayerManagerImpl playerManager) {
         super(playerManager, Platform.BEDROCK_OR_POCKET_EDITION);
         playerManager.registerHandler(this);
     }
@@ -407,7 +407,7 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
                             return;
                         }
                         getAuthMeApi().registerPlayer(player.getName(), password);
-                        player.sendTitle(MessageUtils.color("&a&lĐĂNG KÝ THÀNH CÔNG"), MessageUtils.color("&7CHÚC BẠN CHƠI GAME VUI VẺ"));
+//                        player.sendTitle(MessageUtils.color("&a&lĐĂNG KÝ THÀNH CÔNG"), MessageUtils.color("&7CHÚC BẠN CHƠI GAME VUI VẺ"));
                         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
                         getPlayerManager().getPlayers().computeIfAbsent(player.getUniqueId(), uuid -> {
                             AuthPlayer authPlayer = new AuthPlayerImpl(player);
@@ -416,6 +416,7 @@ public class BPPlayerHandlerImpl extends DataHandlerImpl implements BPPlayerHand
                             return authPlayer;
                         });
                         removeInput(player);
+                        player.kickPlayer(MessageUtils.color("ĐĂNG KÝ THÀNH CÔNG, VUI LÒNG ĐĂNG NHẬP LẠI."));
                     })
                     .closedOrInvalidResultHandler(response -> {
                         removeInput(player);

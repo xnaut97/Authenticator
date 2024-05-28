@@ -1,6 +1,6 @@
 package com.github.tezvn.authenticator.impl.player;
 
-import com.github.tezvn.authenticator.impl.player.handler.BPPlayerHandlerImpl;
+import com.github.tezvn.authenticator.impl.player.handler.PEPlayerHandlerImpl;
 import com.github.tezvn.authenticator.impl.player.handler.DataHandlerImpl;
 import com.github.tezvn.authenticator.impl.player.handler.JavaPlayerHandlerImpl;
 import com.github.tezvn.authenticator.impl.AuthenticatorPluginImpl;
@@ -10,39 +10,31 @@ import com.github.tezvn.authenticator.api.player.AuthPlayer;
 import com.github.tezvn.authenticator.api.player.PlayerManager;
 import com.github.tezvn.authenticator.api.player.handler.DataHandler;
 import com.github.tezvn.authenticator.api.player.handler.Platform;
-import com.github.tezvn.authenticator.impl.utils.MessageUtils;
 import com.google.common.collect.Maps;
 import fr.xephi.authme.api.v3.AuthMeApi;
-import fr.xephi.authme.api.v3.AuthMePlayer;
 import fr.xephi.authme.data.auth.PlayerAuth;
 import fr.xephi.authme.data.auth.PlayerCache;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryMoveItemEvent;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.geysermc.floodgate.api.FloodgateApi;
 
-import javax.sql.DataSource;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.github.tezvn.authenticator.api.AbstractDatabase.DatabaseInsertion;
 
+@Getter
 public class PlayerManagerImpl implements PlayerManager, Listener {
 
     private final Map<UUID, AuthPlayer> players = Maps.newHashMap();
@@ -53,17 +45,10 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
 
     public PlayerManagerImpl(AuthenticatorPluginImpl plugin) {
         this.plugin = plugin;
-        new BPPlayerHandlerImpl(this);
+        new PEPlayerHandlerImpl(this);
         new JavaPlayerHandlerImpl(this);
+        new AuthmeListener(this);
         Bukkit.getPluginManager().registerEvents(this, plugin);
-    }
-
-    public Map<UUID, AuthPlayer> getPlayers() {
-        return players;
-    }
-
-    public AuthenticatorPlugin getPlugin() {
-        return plugin;
     }
 
     @Override
@@ -193,7 +178,7 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
     }
 
     public void deleteFromDatabase(AuthPlayer player) {
-        if(player == null)
+        if (player == null)
             return;
         MySQL database = plugin.getDatabase();
         if (database == null || !database.isConnected())
@@ -225,24 +210,29 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
                 return;
             }
         }
-        Optional<AuthMePlayer> opt = AuthMeApi.getInstance().getPlayerInfo(player.getName());
-        if (opt.isPresent()) {
+
+        AtomicBoolean login = new AtomicBoolean(true);
+        AuthMeApi.getInstance().getPlayerInfo(player.getName()).ifPresent(playerAuth -> {
             Platform platform = foundDuplicate(player);
             if (platform != null && playerPlatform != platform) {
                 player.kickPlayer("§c§lTÀI KHOẢN NÀY ĐÃ ĐƯỢC ĐĂNG KÝ Ở NỀN TẢNG "
                         + (platform == Platform.BEDROCK_OR_POCKET_EDITION ? "ĐIỆN THOẠI" : "MÁY TÍNH"));
-                return;
+                login.set(false);
             }
+        });
+
+        if(login.get()) {
+            DataHandlerImpl handler = (DataHandlerImpl) this.playerHandlers.getOrDefault(
+                    isBE ? Platform.BEDROCK_OR_POCKET_EDITION : Platform.JAVA_EDITION, null);
+            if (handler != null)
+                handler.onExecute(player);
         }
-        DataHandlerImpl handler = (DataHandlerImpl) this.playerHandlers.getOrDefault(
-                isBE ? Platform.BEDROCK_OR_POCKET_EDITION : Platform.JAVA_EDITION, null);
-        if (handler != null)
-            handler.onExecute(player);
+
     }
 
     private Platform foundDuplicate(Player player) {
         AuthPlayer authPlayer = this.players.values().stream()
-                .filter(p -> !p.getUniqueId().equals(player.getUniqueId()) && p.getName().equals(player.getName()))
+                .filter(p -> !p.getUniqueId().equals(player.getUniqueId()) && p.getName() != null && p.getName().equals(player.getName()))
                 .findAny().orElse(null);
         return authPlayer == null ? null
                 : authPlayer.getUniqueId().toString().startsWith("00000000-")

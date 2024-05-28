@@ -1,6 +1,6 @@
 package com.github.tezvn.authenticator.impl.player.handler;
 
-import com.github.tezvn.authenticator.impl.player.input.AbstractInput;
+import com.github.tezvn.authenticator.impl.player.input.*;
 import com.github.tezvn.authenticator.impl.AuthenticatorPluginImpl;
 import com.github.tezvn.authenticator.api.AuthenticatorPlugin;
 import com.github.tezvn.authenticator.api.player.PlayerManager;
@@ -8,11 +8,9 @@ import com.github.tezvn.authenticator.api.player.handler.DataHandler;
 import com.github.tezvn.authenticator.api.player.handler.Platform;
 import com.github.tezvn.authenticator.api.player.input.InputType;
 import com.github.tezvn.authenticator.api.player.input.PlayerInput;
-import com.github.tezvn.authenticator.impl.player.input.LoginInputImpl;
-import com.github.tezvn.authenticator.impl.player.input.PasswordUpdateInputImpl;
-import com.github.tezvn.authenticator.impl.player.input.RegisterInputImpl;
 import com.google.common.collect.Maps;
 import fr.xephi.authme.api.v3.AuthMeApi;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -55,6 +53,14 @@ public abstract class DataHandlerImpl implements DataHandler, Listener {
         removeInput(event.getPlayer());
     }
 
+    public AuthenticatorPlugin getPlugin() {
+        return plugin;
+    }
+
+    public AuthMeApi getAuthMeApi() {
+        return authMeApi;
+    }
+
     public Platform getPlatform() {
         return platform;
     }
@@ -67,10 +73,6 @@ public abstract class DataHandlerImpl implements DataHandler, Listener {
     @Override
     public <T extends PlayerInput> T getInput(Player player) {
         return (T) this.inputs.getOrDefault(player.getUniqueId(), null);
-    }
-
-    public AuthMeApi getAuthMeApi() {
-        return authMeApi;
     }
 
     public abstract void onExecute(Player player);
@@ -155,6 +157,7 @@ public abstract class DataHandlerImpl implements DataHandler, Listener {
                 case LOGIN -> (T) new LoginInputImpl(player);
                 case REGISTER -> (T) new RegisterInputImpl(player);
                 case PASSWORD_UPDATE -> (T) new PasswordUpdateInputImpl(player);
+                case EMAIL ->  (T) new EmailInputImpl(player);
             };
             addInput(input);
         }

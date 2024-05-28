@@ -1,6 +1,6 @@
 package com.github.tezvn.authenticator.api.player.input;
 
-public interface RegisterInput extends PlayerInput, Limitation {
+public interface RegisterInput extends PasswordInput, Limitation {
 
     String getRetypePassword();
 

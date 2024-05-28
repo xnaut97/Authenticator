@@ -6,12 +6,15 @@ import com.github.tezvn.authenticator.impl.commands.CleanCommand;
 import com.github.tezvn.authenticator.impl.commands.NewPasswordCommand;
 import com.github.tezvn.authenticator.impl.commands.PasswordCreateCommand;
 import com.github.tezvn.authenticator.impl.commands.PasswordRecoveryCommand;
+import com.github.tezvn.authenticator.impl.player.AuthmeListener;
 import com.github.tezvn.authenticator.impl.player.PlayerManagerImpl;
 import com.github.tezvn.authenticator.api.AbstractDatabase.MySQL;
 import fr.xephi.authme.settings.commandconfig.CommandManager;
+import net.wesjd.anvilgui.AnvilGUI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.checkerframework.checker.units.qual.A;
 
 import static com.github.tezvn.authenticator.api.AbstractDatabase.*;
 
@@ -41,7 +44,8 @@ public final class AuthenticatorPluginImpl extends JavaPlugin implements Authent
 
     @Override
     public void onDisable() {
-
+        AuthmeListener.anvilGuis.forEach((player, gui) -> gui.closeInventory());
+        AuthmeListener.anvilGuis.clear();
     }
 
     @Override

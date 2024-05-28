@@ -3,7 +3,7 @@ package com.github.tezvn.authenticator.impl.commands;
 import com.github.tezvn.authenticator.api.AuthenticatorPlugin;
 import com.github.tezvn.authenticator.api.player.AuthPlayer;
 import com.github.tezvn.authenticator.api.player.PlayerManager;
-import com.github.tezvn.authenticator.api.player.handler.BPPlayerHandler;
+import com.github.tezvn.authenticator.api.player.handler.PEPlayerHandler;
 import com.github.tezvn.authenticator.api.player.handler.JavaPlayerHandler;
 import com.github.tezvn.authenticator.api.player.input.PlayerInput;
 import com.github.tezvn.authenticator.api.player.handler.Platform;
@@ -43,8 +43,8 @@ public class PasswordRecoveryCommand implements CommandExecutor, TabCompleter {
             }
         }
         if (isPE) {
-            BPPlayerHandler bpPlayerHandler = playerManager.getDataHandler(Platform.BEDROCK_OR_POCKET_EDITION);
-            bpPlayerHandler.openPasswordRecoveryGUI(player);
+            PEPlayerHandler PEPlayerHandler = playerManager.getDataHandler(Platform.BEDROCK_OR_POCKET_EDITION);
+            PEPlayerHandler.openPasswordRecoveryGUI(player);
             return;
         }
         String password = args[0];

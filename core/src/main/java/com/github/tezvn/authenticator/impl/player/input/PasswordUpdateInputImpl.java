@@ -4,7 +4,7 @@ import com.github.tezvn.authenticator.api.player.input.InputType;
 import com.github.tezvn.authenticator.api.player.input.PasswordUpdateInput;
 import org.bukkit.entity.Player;
 
-public class PasswordUpdateInputImpl extends AbstractInput implements PasswordUpdateInput {
+public class PasswordUpdateInputImpl extends PasswordInputImpl implements PasswordUpdateInput {
 
     private String retypePassword;
 

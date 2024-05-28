@@ -2,9 +2,11 @@ package com.github.tezvn.authenticator.impl.player.input;
 
 import com.github.tezvn.authenticator.api.player.input.InputType;
 import com.github.tezvn.authenticator.api.player.input.RegisterInput;
+import lombok.Getter;
 import org.bukkit.entity.Player;
 
-public class RegisterInputImpl extends AbstractInput implements RegisterInput {
+@Getter
+public class RegisterInputImpl extends PasswordInputImpl implements RegisterInput {
 
     private String retypePassword;
 
@@ -23,24 +25,12 @@ public class RegisterInputImpl extends AbstractInput implements RegisterInput {
         this.password2nd = password2nd;
     }
 
-    public String getRetypePassword() {
-        return retypePassword;
-    }
-
     public void setRetypePassword(String retypePassword) {
         this.retypePassword = retypePassword == null ? "" : retypePassword;
     }
 
-    public String getPassword2nd() {
-        return password2nd;
-    }
-
     public void setPassword2nd(String password2nd) {
         this.password2nd = password2nd == null ? "" : password2nd;
-    }
-
-    public int getAttempts() {
-        return attempts;
     }
 
     public void setAttempts(int attempts) {

@@ -10,8 +10,6 @@ public abstract class AbstractInput implements PlayerInput {
 
     private final InputType type;
 
-    private String password;
-
     public AbstractInput(Player player, InputType type) {
         this.player = player;
         this.type = type;
@@ -25,16 +23,6 @@ public abstract class AbstractInput implements PlayerInput {
     @Override
     public InputType getType() {
         return type;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public void setPassword(String password) {
-        this.password = password == null ? "" : password;
     }
 
 

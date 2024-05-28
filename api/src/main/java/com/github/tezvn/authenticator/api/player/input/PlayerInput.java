@@ -8,8 +8,4 @@ public interface PlayerInput {
 
     InputType getType();
 
-    String getPassword();
-
-    void setPassword(String password);
-
 }
