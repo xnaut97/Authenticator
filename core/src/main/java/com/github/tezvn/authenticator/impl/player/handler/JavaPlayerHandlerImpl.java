@@ -10,8 +10,10 @@ import fr.xephi.authme.events.LoginEvent;
 import fr.xephi.authme.events.RegisterEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.*;
 import org.geysermc.floodgate.api.FloodgateApi;
 
@@ -31,7 +33,7 @@ public class JavaPlayerHandlerImpl extends DataHandlerImpl implements JavaPlayer
         Player player = event.getPlayer();
         AuthPlayer authPlayer = getPlayerManager().getPlayer(player);
         if (authPlayer == null) {
-            if(!FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId())) {
+            if (!FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId())) {
                 MessageUtils.sendDelayMessage(player, 1, "&cVì lý do bảo mật nên mỗi người chơi đều phải" +
                                 " có mật khẩu cấp 2 để khôi phục lại mật khẩu chính, nhận thấy bạn chưa có" +
                                 " mật khẩu cấp 2 nên yêu cầu bạn cần thiết lập ngay.",
@@ -46,7 +48,7 @@ public class JavaPlayerHandlerImpl extends DataHandlerImpl implements JavaPlayer
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        if(getInput(event.getPlayer()) != null)
+        if (getInput(event.getPlayer()) != null)
             removeInput(event.getPlayer());
     }
 
@@ -75,6 +77,22 @@ public class JavaPlayerHandlerImpl extends DataHandlerImpl implements JavaPlayer
     @EventHandler
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         event.setCancelled(shouldCancelEvent(event.getPlayer()));
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onInventoryOpen(InventoryOpenEvent event) {
+        event.setCancelled(shouldCancelEvent((Player) event.getPlayer()));
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        event.setCancelled(shouldCancelEvent(event.getPlayer()));
+    }
+
+    @EventHandler
+    public void onCommandPreprocessEvent(PlayerCommandPreprocessEvent event) {
+        if (!event.getMessage().startsWith("/taomatkhaucap2"))
+            event.setCancelled(shouldCancelEvent(event.getPlayer()));
     }
 
     private boolean shouldCancelEvent(Player player) {

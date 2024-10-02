@@ -1,0 +1,5 @@
+message-version: 1
+
+pc-player-join-with-pe-name: "&c&lTÊN NGƯỜI CHƠI CÓ DẤU CHẤM NÊN KHÔNG THỂ &6&l@authenticator-type@"
+block-java-connection: "&c&lNGƯỜI CHƠI JAVA KHÔNG THỂ VÀO!"
+already-registered: "&c&lTÀI KHOẢN NÀY ĐÃ ĐƯỢC ĐĂNG KÝ Ở NỀN TẢNG &6&l@platform-type@"

@@ -10,6 +10,7 @@ import com.github.tezvn.authenticator.api.player.AuthPlayer;
 import com.github.tezvn.authenticator.api.player.PlayerManager;
 import com.github.tezvn.authenticator.api.player.handler.DataHandler;
 import com.github.tezvn.authenticator.api.player.handler.Platform;
+import com.github.tezvn.authenticator.impl.utils.MessageUtils;
 import com.google.common.collect.Maps;
 import fr.xephi.authme.api.v3.AuthMeApi;
 import fr.xephi.authme.data.auth.PlayerAuth;
@@ -45,7 +46,8 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
 
     public PlayerManagerImpl(AuthenticatorPluginImpl plugin) {
         this.plugin = plugin;
-        new PEPlayerHandlerImpl(this);
+        if (Bukkit.getPluginManager().getPlugin("floodgate") != null)
+            new PEPlayerHandlerImpl(this);
         new JavaPlayerHandlerImpl(this);
         new AuthmeListener(this);
         Bukkit.getPluginManager().registerEvents(this, plugin);
@@ -203,10 +205,17 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
         Player player = event.getPlayer();
         boolean isBE = FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId());
         Platform playerPlatform = getPlatform(player);
-        if (playerPlatform == Platform.JAVA_EDITION && player.getName().startsWith(".")) {
-            if (!player.hasPermission("authenticator.pc.bypass")) {
-                player.kickPlayer("§c§lTÊN NGƯỜI CHƠI CÓ DẤU CHẤM NÊN KHÔNG THỂ "
-                        + (AuthMeApi.getInstance().isRegistered(player.getName()) ? "ĐĂNG NHẬP" : "ĐĂNG KÍ"));
+        if (playerPlatform == Platform.JAVA_EDITION) {
+            if (player.getName().startsWith(".")) {
+                if (!player.hasPermission("authenticator.pc.bypass")) {
+                    String type = AuthMeApi.getInstance().isRegistered(player.getName()) ? "ĐĂNG NHẬP" : "ĐĂNG KÍ";
+                    MessageUtils.sendKickMessage(player, "pc-player-join-with-pe-name",
+                            "@authenticator-type@:" + type);
+                    return;
+                }
+            }
+            if (!player.hasPermission("authenticator.java.bypass")) {
+                MessageUtils.sendKickMessage(player, "block-java-connection");
                 return;
             }
         }
@@ -215,13 +224,13 @@ public class PlayerManagerImpl implements PlayerManager, Listener {
         AuthMeApi.getInstance().getPlayerInfo(player.getName()).ifPresent(playerAuth -> {
             Platform platform = foundDuplicate(player);
             if (platform != null && playerPlatform != platform) {
-                player.kickPlayer("§c§lTÀI KHOẢN NÀY ĐÃ ĐƯỢC ĐĂNG KÝ Ở NỀN TẢNG "
-                        + (platform == Platform.BEDROCK_OR_POCKET_EDITION ? "ĐIỆN THOẠI" : "MÁY TÍNH"));
+                String type = platform == Platform.BEDROCK_OR_POCKET_EDITION ? "ĐIỆN THOẠI" : "MÁY TÍNH";
+                MessageUtils.sendKickMessage(player, "already-registered", "@platform-type@:" + type);
                 login.set(false);
             }
         });
 
-        if(login.get()) {
+        if (login.get()) {
             DataHandlerImpl handler = (DataHandlerImpl) this.playerHandlers.getOrDefault(
                     isBE ? Platform.BEDROCK_OR_POCKET_EDITION : Platform.JAVA_EDITION, null);
             if (handler != null)

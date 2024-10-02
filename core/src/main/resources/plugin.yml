@@ -1,6 +1,7 @@
 name: Authenticator
 version: '${project.version}'
 main: com.github.tezvn.authenticator.impl.AuthenticatorPluginImpl
+api-version: 1.16
 depend:
   - AuthMe
   - floodgate
@@ -14,6 +15,14 @@ commands:
   cleanduplicate:
     usage: /cleanduplicate
 permissions:
+  authenticator.*:
+    default: false
+    children:
+      authenticator.java.bypass: true
+      authenticator.pc.bypass: true
+      authenticator.command.cleanduplicate: true
+  authenticator.java.bypass:
+    default: op
   authenticator.pc.bypass:
     default: false
     description: Allow PC player join server by PE username.

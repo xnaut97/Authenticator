@@ -16,6 +16,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class PasswordCreateCommand implements CommandExecutor, TabCompleter {
         String password = args[0];
         PlayerPasswordCreateEvent event = new PlayerPasswordCreateEvent(player, password);
         Bukkit.getPluginManager().callEvent(event);
-        if(event.getRestrictions().size() > 0) {
+        if(!event.getRestrictions().isEmpty()) {
             if(event.hasRestriction(RestrictionType.MIN_LENGTH)) {
                 if (password.length() < getMinPasswordLength()) {
                     MessageUtils.sendMessage(player, "&cMật khẩu không được ngắn hơn &6"

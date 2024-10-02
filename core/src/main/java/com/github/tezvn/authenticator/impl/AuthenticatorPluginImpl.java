@@ -9,20 +9,34 @@ import com.github.tezvn.authenticator.impl.commands.PasswordRecoveryCommand;
 import com.github.tezvn.authenticator.impl.player.AuthmeListener;
 import com.github.tezvn.authenticator.impl.player.PlayerManagerImpl;
 import com.github.tezvn.authenticator.api.AbstractDatabase.MySQL;
+import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning;
+import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings;
+import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
+import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings;
+import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
 import fr.xephi.authme.settings.commandconfig.CommandManager;
+import lombok.Getter;
 import net.wesjd.anvilgui.AnvilGUI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.checkerframework.checker.units.qual.A;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Objects;
+
 import static com.github.tezvn.authenticator.api.AbstractDatabase.*;
 
+@Getter
 public final class AuthenticatorPluginImpl extends JavaPlugin implements AuthenticatorPlugin {
 
     private MySQL database;
 
     private PlayerManager playerManager;
+
+    private YamlDocument message;
 
     @Override
     public void onEnable() {
@@ -33,6 +47,7 @@ public final class AuthenticatorPluginImpl extends JavaPlugin implements Authent
         }
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
+        setupConfig();
         this.playerManager = new PlayerManagerImpl(this);
         setupCommands();
         getLogger().info("Hooked into AuthMe!");
@@ -103,6 +118,19 @@ public final class AuthenticatorPluginImpl extends JavaPlugin implements Authent
         PluginCommand command4 = getCommand("cleanduplicate");
         if (command3 != null) {
             command4.setExecutor(new CleanCommand(this));
+        }
+    }
+
+    private void setupConfig() {
+        try {
+            this.message = YamlDocument.create(new File(getDataFolder(), "messages.yml"),
+                    Objects.requireNonNull(getResource("messages.yml")),
+                    GeneralSettings.DEFAULT,
+                    LoaderSettings.builder().setAutoUpdate(true).build(),
+                    DumperSettings.DEFAULT,
+                    UpdaterSettings.builder().setVersioning(new BasicVersioning("message-version")).build());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

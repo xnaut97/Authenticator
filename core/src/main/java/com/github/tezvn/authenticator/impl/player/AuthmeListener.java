@@ -48,7 +48,6 @@ public class AuthmeListener extends DataHandlerImpl {
     public static Map<Player, AnvilGUI> anvilGuis = Maps.newHashMap();
 
     private final AuthMeApi authMeApi = AuthMeApi.getInstance();
-    private final FloodgateApi floodgateApi = FloodgateApi.getInstance();
 
     public AuthmeListener(PlayerManager playerManager) {
         super(playerManager, Platform.NONE);
@@ -145,7 +144,7 @@ public class AuthmeListener extends DataHandlerImpl {
         EmailInput input = getOrCreate(player, InputType.EMAIL);
         if (!FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId()))
             return;
-        floodgateApi.getPlayer(player.getUniqueId()).sendForm(CustomForm.builder()
+        FloodgateApi.getInstance().getPlayer(player.getUniqueId()).sendForm(CustomForm.builder()
                 .title("XÁC MINH EMAIL")
                 .label(MessageUtils.color("&7[&4&l!&7] &cDùng mật khẩu cấp 2 để xác minh"))
                 .input("Mật khẩu cấp 2", "Nhập mật khẩu cấp 2...",
